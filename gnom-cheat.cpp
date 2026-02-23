@@ -35,32 +35,22 @@ uintptr_t GetModuleBaseAddress(const char* modName) {
     return modBaseAddr;
 }
 
-uintptr_t FindDMAAddy(HANDLE hProc, uintptr_t ptr, std::vector<unsigned int> offsets) {
-    uintptr_t addr = ptr;
+void InfinityStamina() {
+    uintptr_t addr = gameModule + 0x1F31A18;
+    uintptr_t offsets[] = { 0x90, 0x68, 0x8, 0x4F0, 0x78, 0x350 };
 
-    for (unsigned int i = 0; i < offsets.size(); ++i) {
-        ReadProcessMemory(hProc, (BYTE*)addr, &addr, sizeof(addr), 0);
+    for (int i = 0; i < 6; i++) {
+        ReadProcessMemory(hProcess, (LPCVOID)addr, &addr, sizeof(addr), NULL);
         addr += offsets[i];
     }
 
-    return addr;
-}
-
-void InfinityStamina() {
-    gameModule = (uintptr_t)GetModuleBaseAddress("UnityPlayer.dll");
-    uintptr_t staminaAddr = gameModule + 0x1F31A18;
-
-    std::vector<unsigned int> staminaOffset = { 0x90, 0x68, 0x8, 0x4F0, 0x78, 0x350 };
-    uintptr_t staminaBaseAddr = FindDMAAddy(hProcess, staminaAddr, staminaOffset);
-
-    WriteProcessMemory(hProcess, (LPVOID)staminaBaseAddr, &stamina, sizeof(stamina), 0);
+    WriteProcessMemory(hProcess, (LPVOID)addr, &stamina, sizeof(stamina), NULL);
 }
 
 int main() {
     setlocale(LC_ALL, "Russian");
 
     SetConsoleTitle("Infinity Stamina (Gnomium | by elyrin)");
-
     hwnd = FindWindow(0, "Gnomium");
 
     if (hwnd == NULL) {
@@ -71,11 +61,16 @@ int main() {
 
     GetWindowThreadProcessId(hwnd, &pID);
     hProcess = OpenProcess(PROCESS_ALL_ACCESS, false, pID);
+    gameModule = (uintptr_t)GetModuleBaseAddress("UnityPlayer.dll");
 
     cout << "[+] | Игра запущена! Если ты до сих пор в меню - заходи в игру чтобы подгрузить стамину!" << endl;
     cout << "[+] | Поменял значение стамины на " << stamina << " единиц!" << endl;
 
     while (true) {
         InfinityStamina();
+        Sleep(100);
     }
+
+    CloseHandle(hProcess);
+    return 0;
 }
