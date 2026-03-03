@@ -11,7 +11,7 @@ DWORD pID;
 HANDLE hProcess;
 uintptr_t gameModule;
 
-float stamina = 100;
+float stamina = 10000000;
 
 uintptr_t GetModuleBaseAddress(const char* modName) {
     uintptr_t modBaseAddr = 0;
@@ -61,15 +61,19 @@ int main() {
 
     GetWindowThreadProcessId(hwnd, &pID);
     hProcess = OpenProcess(PROCESS_ALL_ACCESS, false, pID);
+
+    if (hProcess == NULL) {
+        cout << "[-] | Не удалось открыть процесс!" << endl;
+        system("pause");
+        return 0;
+    }
+
     gameModule = (uintptr_t)GetModuleBaseAddress("UnityPlayer.dll");
 
-    cout << "[+] | Игра запущена! Если ты до сих пор в меню - заходи в игру чтобы подгрузить стамину!" << endl;
-    cout << "[+] | Поменял значение стамины на " << stamina << " единиц!" << endl;
+    InfinityStamina();
 
-    while (true) {
-        InfinityStamina();
-        Sleep(100);
-    }
+    cout << "[+] | Игра запущена! Если ты до сих пор в меню - заходи в игру чтобы подгрузить стамину!" << endl;
+    cout << "[+] | Стамина теперь бесконечная (10 миллионов)!" << endl;
 
     CloseHandle(hProcess);
     return 0;
